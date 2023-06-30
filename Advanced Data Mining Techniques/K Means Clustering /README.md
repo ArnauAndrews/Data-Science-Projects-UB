@@ -1,4 +1,4 @@
-Access the full project with html widgets at **https://rpubs.com/ArnauAndrews/1059093**
+Access the full project at the following link: **https://rpubs.com/ArnauAndrews/1059093**
 
 # Analyzing Small Business Clusters for each USA State: Identifying Patterns and Opportunities for Economic Growth
 
