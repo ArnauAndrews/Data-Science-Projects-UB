@@ -1,0 +1,454 @@
+---
+title: "Wine Classification using Factor and Linear Discriminate Analysis"
+output: html_document
+date: "2023-06-30"
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Problem Statement
+
+For this exercise, we will focus on a dataset that represents the quality of different types of Portuguese red wine. The quality is determined based on various attributes that characterize each type of wine. Through Factor Analysis, we will explore the possibility of classifying them based on different characteristics of the wine itself, such as alcohol percentage or density.
+
+The subset of variables from the original dataset that we will use are as follows:
+
+- **residual.sugar**: the amount of sugar left after fermentation; it is rare to find wines with less than 1 gram/liter, and wines with more than 45 grams/liter are considered sweet.
+- **density**: the density of the wine, which approximates that of water based on the alcohol percentage and sugar content.
+- **pH**: describes the acidity or alkalinity of a wine on a scale of 0 (very acidic) to 14 (very basic); most wines fall between 3 and 4 on the pH scale.
+- **alcohol**: the percentage of alcohol in the wine.
+- **citric.acid**: found in small amounts, citric acid can add freshness and flavor to wines.
+- **volatile.acidity**: the amount of acetic acid in the wine, which at excessively high levels can produce an unpleasant vinegar-like taste.
+
+We first load the necessary packages
+
+```{r}
+library(MASS)
+library(ggplot2)
+library(dplyr)
+library(stats)
+library(base)
+
+```
+
+We then load the dataset
+
+```{r}
+df <- read.csv("/Users/arnauandrews/Desktop/UB-Master/M4 - Técnicas Avanzadas de Minería de Datos/Data/4.2_PCA_AF_ejercicio.csv", header=TRUE, sep = ";")
+```
+
+
+## 1. Dataset Preparation.
+
+As you can see, the dataset contains variables that we do not need for the exercise, so we need to select only the variables defined in the previous section.
+
+###1.1. Selecting the variables defined in the previous section from the original dataset.
+
+
+```{r}
+
+# Selecting required variables
+df = df %>% select(residual.sugar, density, pH, alcohol, citric.acid, volatile.acidity)
+
+```
+
+### 1.2 Factor Analysis.
+
+Once you have prepared the dataset, perform Factor Analysis for 2 factors using the `factanal` function.
+
+```{r}
+# Factor Analysis
+
+df.fa<-factanal(df, factors= 2)
+print(df.fa)
+
+```
+
+### 2. Identifying variables not well represented by the factors.
+
+To identify the variables that are not well represented by the factors, we can look at the factor loadings. High factor loadings indicate that a variable is well represented by the corresponding factor, while low loadings suggest a poor representation.
+
+```{r}
+# Print the variables not well represented by the factors
+print("The variables that are not well represented by the factors are:")
+
+print("1. pH with a loading of 0.681")
+print("2. residual.sugar with a loading of 0.874")
+print("3. alcohol with a loading of 0.654")
+print("4. volatile.acidity with a loading of 0.635")
+
+print("A high loading value indicates that the factors do not explain the variance of that variable well.")
+
+
+```
+
+### 3. Printing the uniqueness of each variable. 
+
+```{r}
+# Uniqueness of each variable
+print(df.fa$uniquenesses)
+```
+
+### 4. Determining which variables are contributing the most to each factor:
+
+```{r}
+cat("To determine which variables are contributing the most to each factor, we can examine the loadings of the variables on the respective factors. The variables with higher absolute loadings indicate a stronger contribution to that particular factor.\n\n")
+cat("Based on the loadings obtained from the factor analysis, we can identify the variables that are contributing the most to each factor:\n\n")
+
+cat("**Factor 1:** The variables contributing the most to Factor 1 are:\n\n")
+cat("- citric.acid with a loading of 0.987\n")
+cat("- volatile.acidity with a loading of 0.513\n\n")
+cat("These variables have higher loadings on Factor 1, indicating a stronger association and contribution to this factor.\n\n")
+
+cat("**Factor 2:** The variables contributing the most to Factor 2 are:\n\n")
+cat("- density with a loading of 0.853\n")
+cat("- alcohol with a loading of 0.614\n\n")
+cat("These variables have higher loadings on Factor 2, indicating a stronger association and contribution to this factor.\n\n")
+
+cat("The loadings represent the correlations between the variables and the factors. Variables with higher absolute loadings on a factor are more strongly associated with that factor and contribute more to its interpretation.\n")
+
+```
+
+
+### 5. Proportion of the variance is explained by each factor. Following the Kaiser's rule
+
+
+```{r}
+
+cat("The proportion of variance explained by each factor can be seen in the Proportion Var table. According to this table, Factor 1 explains 27.9% of the variance, while Factor 2 explains 24.5% of the variance.\n\n")
+
+cat("The Kaiser's rule states that factors with SS loadings greater than 1 should be retained. In the SS loadings table, it can be seen that Factor 1 has a value of 1.675 and Factor 2 has a value of 1.471. Therefore, according to this rule, both factors should be retained.\n")
+
+```
+
+## 1.3 Residual Matrix.
+
+##6. Printing the residual matrix and interpreting the results. Which variables are better represented in the factors according to the values in the matrix?
+
+```{r}
+# Loadings Matrix
+Lambda <- df.fa$loadings
+
+# Uniqueness Matrix
+Psi <- diag(df.fa$uniqueness)
+
+# Observed Correlation Matrix
+S <- df.fa$correlation
+
+# Adjusted Correlation Matrix
+Sigma <- Lambda %*% t(Lambda) + Psi
+
+# Residual Matrix
+round(S - Sigma, 6)
+
+print("Values closer to zero indicate that the variables are well represented by the factors, while higher values indicate greater error in the representation.")
+
+print("In this case, it can be observed that the variables residual.sugar, density, citric.acid, and volatile.acidity have residuals values close to zero, indicating that they are well represented by the factors.")
+print("On the other hand, the variables pH and alcohol have higher residual values, suggesting that the representation through the factors is not as accurate for these variables.")
+
+
+
+```
+
+## 1.4 Factor interpetation
+
+### 7. Adjusting three factorial models, one without rotation, one with varimax rotation, and one with promax rotation, and creating scatter plots of Factor 1 and Factor 2 for each of them. Representing the value of each point with the variable name.
+
+```{r}
+# Creating three factorial models with different rotations
+
+df.fa.none<-factanal(df, factors=2, rotation="none")
+df.fa.varimax<-factanal(df, factors=2, rotation="varimax")
+df.fa.promax<-factanal(df, factors=2, rotation="promax")
+
+
+# Defining the graphical output (3 plots in 1 row)
+
+par(mfrow = c(1,3))
+
+# First graph: Without rotation
+
+plot(df.fa.none$loadings[,1], 
+     df.fa.none$loadings[,2],
+     xlab = "Factor 1", 
+     ylab = "Factor 2", 
+     ylim = c(-1,1),
+     xlim = c(-1,1),
+     main = "No rotation")
+abline(h = 0, v = 0)
+
+# Color Text red for the first graph
+
+text(df.fa.none$loadings[,1]-0.08, 
+     df.fa.none$loadings[,2]+0.08,
+      colnames(df),
+      col="red")
+abline(h = 0, v = 0)
+
+# Secong graph, rotation= varimax
+
+plot(df.fa.varimax$loadings[,1], 
+     df.fa.varimax$loadings[,2],
+     xlab = "Factor 1", 
+     ylab = "Factor 2", 
+     ylim = c(-1,1),
+     xlim = c(-1,1),
+     main = "Varimax rotation")
+
+# Blue text color for the second graph
+
+text(df.fa.varimax$loadings[,1]-0.08, 
+     df.fa.varimax$loadings[,2]+0.08,
+      colnames(df),
+      col="blue")
+abline(h = 0, v = 0)
+
+# Third graph, rotation=promax 
+
+plot(df.fa.promax$loadings[,1], 
+     df.fa.promax$loadings[,2],
+     xlab = "Factor 1", 
+     ylab = "Factor 2", 
+     ylim = c(-1,1),
+     xlim = c(-1,1),
+     main = "Promax rotation")
+
+# Black text color or the third graph 
+
+text(df.fa.promax$loadings[,1]-0.08, 
+     df.fa.promax$loadings[,2]+0.08,
+      colnames(df),
+      col="black")
+abline(h = 0, v = 0)
+
+
+```
+
+### 8. Interpreting the results. Features which best represent Factor 1 and Factor 2, and how they can be interpreted based on their underlying meaning. Assigning a commercial name to each of the two factors.
+
+
+```{r}
+cat("- **In factorial analysis**, if two variables have large loadings (high correlations) for the same factor, it can be inferred that those variables share some underlying characteristic or property that is being captured by that factor.\n")
+cat("- In this case, **Factor 1** represents the common characteristics of **citric.acid** found in certain types of red wines, such as those with high citric acid content.\n")
+cat("- On the other hand, **Factor 2** is associated with the characteristics of **density** (*density*), which could be determined by the amount of sugar and alcohol present in other types of red wines, such as those with high sugar and alcohol content.\n\n")
+cat("We could name these factors as \"dry red wines\" (*Factor 1*) and \"sweet red wines\" (*Factor 2*).")
+
+```
+
+# 2. Part Two: Linear Discriminate Analysis
+
+### 1. Problem Statement
+
+For this exercise, we will focus on a dataset that represents the quality of various types of Portuguese red wine. The quality values range from 3 to 8. Based on 11 different attributes that characterize each type of wine, we need to be able to classify the quality that each wine will have.
+
+You can find the dataset and the data dictionary in the data folder.
+
+So, the first thing we will do is load the dataset in R:
+
+```{r,warning=FALSE,message=FALSE}
+# Loading Necessary Pacakges
+require(MASS)
+require(caret)
+require(randomForest)
+require(e1071)
+require(dplyr)
+
+# Loading of the dataset
+
+df <- read.csv("/Users/arnauandrews/Desktop/UB-Master/M4 - Técnicas Avanzadas de Minería de Datos/Data/4.3_AD_ejercicio.csv", header = TRUE, sep = ";")
+```
+
+## 1. Dataset Preparation
+
+Dataset with 11 features and 1599 rows.
+
+### 1. Modifying the 'quality' variable so that if the quality is in the values 3 or 4, it will be categorized as "poor". 
+
+If it is in the values 5 or 6, it will be categorized as "acceptable". 
+
+And if it is in the values 7 or 8, it will be categorized as "good". Then, transform the 'quality' variable into a factor.
+
+```{r}
+
+# Modifying the quality variable
+
+df$quality<-as.numeric(df$quality)
+
+df$quality<- cut(df$quality, breaks = c(3,4,6,8), labels = c("Low","Acceptable","Good"))
+
+# Transforming the variable to factor
+
+df$quality<-as.factor(df$quality)
+
+```
+
+### 2. Creating a new dataset that contains all the explanatory variables normalized in the range of 0-1 and the target label (called 'quality' in the original dataset).
+
+```{r}
+# Normalizing the variables of the dataset in the range of 0-1
+
+maxs <- apply(df[, 1:11], 2, max)
+mins <- apply(df[, 1:11], 2, min)
+
+df_norm <- as.data.frame(scale(df[, 1:11], center = mins, scale = maxs - mins))
+
+# Creating new dataset with the normalized variables and the target label
+
+df_norm <- cbind(df_norm, quality = df$quality)
+
+```
+
+### 3.Training (70%), Testing (30%).
+
+```{r}
+# C(70% training)
+
+set.seed(12345)
+
+index <- sample( 1:nrow( df_norm ), round( nrow( df_norm )*0.7 ), replace = FALSE )
+X_train <- df_norm[ index, ]
+
+# (30% testing)
+
+test <- df_norm[ -index, ]
+
+```
+
+## 1.2 Linear Discriminate Analysis as a Predictor
+
+### 4. Creating a LDA model and ploting the 2 new dimensions created in a graph where the 3 categories of the label to be predicted can be visualized using different colors. Explanation:
+
+```{r}
+# Creating the LDA model object named 'model'
+
+model <- lda(quality ~ ., data = X_train )
+
+# Plotting the two new dimensions created by the LDA model
+
+projected_data <- as.matrix( X_train[, 1:11] ) %*% model$scaling
+plot( projected_data, col = X_train[,12], pch = 19)
+
+print("The LDA model has adequately segmented the observations based on the predicted class. In the plot, we can see that the three categories of the predicted label are clearly separated and distinguishable by different colors. This indicates that the LDA model has successfully captured the underlying structure and patterns in the data related to the class variable.")
+
+```
+The LDA model has adequately segmented the observations based on the predicted class. In the plot, we can see that the three categories of the predicted label are clearly separated and distinguishable by different colors. 
+
+This indicates that the LDA model has successfully captured the underlying structure and patterns in the data related to the class variable.
+
+### 5. Creating a model using Linear Discriminate Analysis as the classifier, applying predictions to the testing subset, and calculating the confusion matrix. Do you consider that the model is correctly predicting observations from the minority class?
+
+```{r}
+
+# Calculating predictions of the model on the testing subset
+
+X_test <- test[, !( names( test ) %in% c( "quality" ) ) ]  
+model.results <- predict( model, X_test )
+
+
+# Confusion matrix
+
+t = table( model.results$class, test$quality )
+print(confusionMatrix(t))
+```
+
+
+According to the confusion matrix, the LDA model correctly classifies the majority of observations (accuracy = 0.8442). 
+
+However, it struggles to predict the minority class of "Poor" wines (with 0 true positives).
+
+This suggests that the LDA model is not accurately predicting observations belonging to the minority class.
+
+## 1.3 Linear Discriminate Analysis as a Dimensionality Reducer
+
+After applying LDA as a classifier, we will now use it as a dimensionality reducer to subsequently apply a different classifier.
+
+### 6. Creating a new training dataset and a testing dataset using the variables created by the previously created LDA model.
+
+```{r}
+
+# Creating the new training dataset
+
+new_X_train <- as.matrix(X_train[, 1:11]) %*% model$scaling
+new_X_train <- as.data.frame(new_X_train)
+new_X_train$quality <- X_train$quality
+head(new_X_train)
+
+# Creating the new testing dataset
+
+new_X_test <- as.matrix(X_test[, 1:11]) %*% model$scaling
+new_X_test <- as.data.frame(new_X_test)
+new_X_test$quality <- X_test$quality
+head(new_X_test)
+
+
+```
+
+## 7. Training a new model using the Random Forest algorithm on the new training dataset  created and applying the predictions to the new testing dataset. 
+
+### Evaluation of the confusion matrix. Does this model have higher accuracy than the previous one? Does this model perform better or worse on the minority classes compared to the previous model?
+
+```{r}
+
+# Training the model with Random Forest
+
+new_X_train<-na.omit(new_X_train)
+modfit <- randomForest(quality ~. , data=new_X_train)
+
+# Predictions with Random Forest
+predictions<- predict(modfit, as.data.frame(new_X_test), type = "class")
+
+# Confusion matrix
+t = table(predictions, test$quality)
+print(confusionMatrix(t))
+
+```
+
+
+The Random Forest model has slightly better accuracy than the previous LDA model, with an accuracy of 0.8526, indicating higher accuracy.
+
+Additionally, this model has better sensitivity for the minority class "Pobre" compared to the previous LDA model. However, the sensitivity for the "Bueno" class remains low in the Random Forest model, indicating that there is still room for improvement in the classification of different wine categories. Overall, the Random Forest model is a better choice for accuracy in classifying minority observations compared to the LDA model.
+
+
+### 8. Training a new model using the Random Forest algorithm on the initial training dataset that you used for the LDA classifier, and applying the predictions to the testing dataset that you used for the LDA classifier. 
+
+### Does this model have higher accuracy than the previous models? Does this model perform better or worse on the minority classes compared to the previous models?
+
+```{r}
+# Random forest
+X_train<-na.omit(X_train)
+modfit_1 <- randomForest(quality ~. , data=X_train)
+
+# Predictions
+
+predictions_1<- predict(modfit_1, as.data.frame(X_test), type = "class")
+
+# Confusion Matrix
+t = table(predictions_1, test$quality)
+print(confusionMatrix(t))
+```
+
+The trained Random Forest model on the original dataset improves in terms of accuracy compared to previous models, with a total precision of 0.8779.
+
+However, the model has a very low sensitivity in the "Low" class compared to the other models, which means it has better precision for the minority class. 
+
+
+### 9. Choosing the best performing model
+
+```{r}
+print("Overall, the global accuracy of the three models (84%-86%) is slightly higher than the No Information Rate (NIR) (83-84%), suggesting that the models predict slightly better than what would be expected by randomly choosing the most frequent class in the dataset. This indicates that the classification of the models is slightly better.")
+
+print("However, I would choose the LDA model due to its higher sensitivity to the minority class, 'Pobre', even though it may not have the highest accuracy (although it is similar to the other models).")
+
+print("Note 1: For each model, I would add cross-validation to ensure that there is no overlap of values between the training and testing sets that could result in incorrect predictions.")
+
+print("Note 2: To address the data imbalance in the model, I would incorporate a data imputation method such as SMOTE to ensure that the model gives equal importance to each of the three classes and does not favor 'Acceptable' and 'Good' over 'Low'.")
+
+```
+
+
+
+
+
+
