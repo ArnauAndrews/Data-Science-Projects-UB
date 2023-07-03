@@ -1,11 +1,14 @@
 # News Classification (HuffPost)
 
-![HuffPost.svg.png](attachment:HuffPost.svg.png)
+![HuffPost svg](https://github.com/ArnauAndrews/Data-Analytics-Projects-Ubiqum/assets/132329252/d4e774be-c68d-4c66-9464-bc118095eef9)
+
+## Abstract 
+The project involved several key steps. First, we trained a Naive-Bayes model using a dataset of 200,000 news headlines, exploring different alpha values to optimize its performance. Then, we evaluated the model's accuracy by applying it to new data obtained through web scraping using Beautiful Soup. Finally, we iteratively refined the model by finding the best alpha parameter, aiming to strike a balance between underfitting and overfitting, and improve its predictive capabilities for news article classification.
 
 ## Table of Contents
 - [Context](#context)
 - [Variables](#variables)
-- [Task](#task)
+- [Objective](#objective)
 - [Approach and Models Used](#approach-and-models-used)
 - [Web Scraping](#web-scraping)
 - [Findings & Conclusions](#findings--conclusions)
@@ -24,7 +27,7 @@ The dataset is in JSON format and includes the following keys:
 - `Short_description`: Gives a summary of the article.
 - `Date`: Represents the date of the article.
 
-## Task
+## Objective
 The main tasks involved in this project are as follows:
 
 1. Create a **multiclass classification model** that can identify the categories: WELLNESS, PARENTING, TRAVEL, BUSINESS, and SPORTS.
@@ -44,24 +47,25 @@ The main tasks involved in this project are as follows:
 ## Approach and Models Used
 The project follows the following approach:
 
-1. Data preprocessing: The dataset is converted into a Pandas DataFrame, and text preprocessing techniques are applied.
-2. Model training: A Naive-Bayes algorithm is used for multiclass classification, with different values of the "Alpha" parameter tested.
-3. Model evaluation: The trained model's performance is evaluated using precision, recall, and F1-score for each category, as well as the average precision.
-4. Web scraping: Additional headlines are collected for each category from the web.
-5. Applying the model: The trained model is applied to predict the categories of the new articles.
-6. Evaluation of the model's performance with new articles: The performance of the model is analyzed, considering precision and recall for each category.
+1. **Data preprocessing:** The dataset is converted into a Pandas DataFrame, and text preprocessing techniques are applied.
+2. **Model training**: A **Naive-Bayes** algorithm is used for multiclass classification, with different values of the "Alpha" parameter tested.
+3. **Model evaluation:** The trained model's performance is evaluated using precision, recall, and F1-score for each category, as well as the average precision.
+4. **Web scraping:** Additional headlines are collected for each category from the web using **BeautifulSoup**
+5. **Applying the model:** The trained model is applied to predict the categories of the new articles.
+6. **Hyperparameter tunning:** Different values of the "Alpha" parameter are analyzed during model training to find the best balance between overfitting and underfitting. By evaluating the model's performance with different "Alpha" values, we choose the one that provides the best results in terms of precision, recall, and F1-score for each category, as well as the average precision which is 1.
+7. **Evaluation** of the model's performance with new articles: The performance of the model is analyzed, considering precision and recall for each category.
 
 ## Web Scraping
 Web scraping is performed to collect more article headlines for each category. This helps to expand the dataset and evaluate the model's performance on current articles. TF-IDF Vectorizer is then applied to the scraped headlines, and predictions are made using the trained model. The results are evaluated and commented on.
 
-## Findings & Conclusions
-- The model achieves an overall accuracy of 60% in correctly classifying articles, which is higher than the No Information Rate (N
+![Unknown](https://github.com/ArnauAndrews/Data-Analytics-Projects-Ubiqum/assets/132329252/ceb23f70-e53e-4dd6-9ef3-b3abb69cd01a)
 
-IR) of 20%.
+## Findings & Conclusions
+- The model achieves an overall accuracy of 60% in correctly classifying articles, which is higher than the No Information Rate (NIR) of 20%.
 - The category with the highest predictive capacity is *Travel*, with a precision of 0.65 and a recall of 0.80.
 - The category with the lowest predictive capacity is *Business*, with a precision of 0.64 and a recall of 0.326.
 - To improve the model, it is recommended to test it with more articles and train it with more detailed keyword features for categories with lower predictive capacity (Business, Parenting, and Sports).
 - Despite some categories having lower accuracy, the model provides significant value in classifying Travel and Wellness articles, and its classifications can be confidently used in those categories.
 
 ## Applications and Next Steps
-The developed model has various applications, such as automated article categorization, content recommendation systems, or analyzing language patterns in news articles. The model's performance can be further improved by incorporating more training data, experimenting with different feature engineering techniques, or trying advanced machine learning algorithms. Additionally, the model can be fine-tuned by adjusting hyperparameters or incorporating domain-specific knowledge.
+The developed model has various applications, such as automated article categorization, content recommendation systems, or analyzing language patterns in news articles. The model's performance can be further improved by incorporating more training data, experimenting with different feature engineering techniques, or trying advanced machine learning algorithms. 
