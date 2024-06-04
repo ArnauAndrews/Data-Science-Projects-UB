@@ -1,5 +1,7 @@
 ### Treatwell Churn Prediction Project
 
+![images](https://github.com/ArnauAndrews/Data-Science-Projects-UB/assets/132329252/e0a63c29-bafe-4038-bc17-106e49847d85)
+
 #### Project Overview:
 
 The **Treatwell Churn Prediction Project** aimed to develop a model to predict venue churn, providing Treatwell with actionable insights to retain venues on their platform. Through data analysis and machine learning techniques, the project sought to address the challenge of proactive churn management and enhance Treatwell's customer retention strategies.
